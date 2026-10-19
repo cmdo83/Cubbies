@@ -4,6 +4,8 @@ Oct 18, 2026
 
 Cubbies is a desktop organiser for Linux on X11, with the Cinnamon, MATE or Xfce desktop. It puts boxes, called cubbies, on the desktop that hold icons for files, folders, applications and system places such as Computer, Home and Trash. Each cubby can be named, coloured from see-through to solid, resized, snapped into place, locked, rolled up to its title bar or combined with others as tabs. A cubby can also show a real folder live, collect new desktop files by type, or list recently opened files. The desktop can be split into several pages, each with its own cubbies, wallpaper and background settings, and switched with the keyboard, mouse wheel, touchpad or screen edge, and renamed, re-ordered and styled together in Manage Pages. Icons in a cubby use the file manager's menus, actions, scripts and clipboard (Nemo, Caja or Thunar), and moves, renames and deletes can be undone.
 
+![A Cinnamon desktop with Cubbies: see-through blue cubbies for apps and files along the top, and a tabbed cubby on the right](screenshots/desktop.jpg)
+
 ## Highlights
 
 - **Cubbies** — boxes in any colour, from see-through to solid, that hold your files, folders and apps. Draw one on the desktop with the mouse and the icons inside the box drop straight in.
@@ -19,6 +21,10 @@ Cubbies is a desktop organiser for Linux on X11, with the Cinnamon, MATE or Xfce
 Cubbies is a free desktop organiser for Linux on X11, with the Cinnamon, MATE or Xfce desktop (tested on Linux Mint, Debian, Ubuntu, Fedora and EndeavourOS), that keeps your desktop tidy with boxes, called cubbies, that hold your icons and can be anything from see-through to solid. It is a Python 3 + GTK3 program, installed from a .deb, .rpm or tar.gz package, and this document describes version 1.20.4.
 
 It is for anyone whose desktop fills up with downloads, documents and shortcuts, and who wants them grouped, labelled and out of the way without giving up the desktop itself.
+
+| Before | After |
+| --- | --- |
+| ![The same desktop without Cubbies: icons scattered everywhere](screenshots/before.jpg) | ![The same desktop with Cubbies: the icons grouped into named cubbies](screenshots/desktop.jpg) |
 
 Three ideas carry the whole program:
 
@@ -74,6 +80,8 @@ Every cubby can be placed, sized and styled by hand, and most choices can be set
 - Drawing a box around existing cubbies picks them, so they move together.
 - Right-click the page bar › New Cubby › Cubby, Folder Cubby, Inbox Cubby, Recent Files Cubby or Launch Bar Cubby.
 
+![Drawing a box around three desktop icons, with the menu offering Create Cubby Here, Create Folder Cubby Here, Create Inbox Cubby Here and Create Recent Files Cubby Here](screenshots/drawing-a-cubby.jpg)
+
 **Title bars**
 
 - Names are edited in place: a slow second click on the name, or Rename from the menu.
@@ -100,6 +108,8 @@ Every cubby can be placed, sized and styled by hand, and most choices can be set
 - Idle fading: cubbies fade when the pointer isn't over them, to a level you choose.
 - Roll-up: double-click a title bar to roll a cubby up to its title; it opens on hover, on click, or not at all. Cubbies docked at the top or bottom edge can roll up by themselves.
 
+![Styling Options open for a cubby called Other, which has turned pink while its colour sliders are moved](screenshots/styling-options.jpg)
+
 ## Kinds of cubbies, tabs and filters
 
 A cubby can be one of five kinds; Right-click › Cubby Type switches between the first four.
@@ -111,6 +121,8 @@ A cubby can be one of five kinds; Right-click › Cubby Type switches between th
 | Inbox Cubby | New files that land on the desktop | Catches “everything else”; has its own icon |
 | Recent Files Cubby | The files you opened lately, newest first | Fills itself; Clear Recent Files from its menu |
 | Launch Bar Cubby | Your favourite apps, along a screen edge | No title bar, auto-hide, one click to open; see Pages and launch bars |
+
+![A Folder Cubby showing photos from a folder, with thumbnails and the ↑ button for going back up](screenshots/folder-cubby.jpg)
 
 **Tabbed cubbies**
 
@@ -152,6 +164,8 @@ Icons in a cubby behave like icons in the file manager: same menus, same clipboa
 - Your own file-manager actions and scripts: Nemo actions and scripts on Cinnamon, Caja scripts and caja-actions on MATE, Thunar custom actions on Xfce; plus Compress and Extract Here (File Roller or Engrampa).
 - Cut / Copy / Paste work both ways with the file manager (Nemo, Caja and Thunar).
 
+![The right-click menu on a file in a cubby: Open With, Cut, Copy, Rename, Move to Page, Put in Nook, Move Back to Desktop, Delete, Compress and Properties](screenshots/file-menu.jpg)
+
 **Safety**
 
 - Name clashes in a Folder Cubby open a conflict window like the file manager's: both files' preview, size and date, Cancel, Skip, Keep Both or Rename, Replace (the old file goes to the Trash), or Merge for folders, with “do the same for the others”.
@@ -168,6 +182,8 @@ Icons in a cubby behave like icons in the file manager: same menus, same clipboa
 - Show on Every Page keeps a cubby on all pages, in its own place on each page or the same place everywhere; deleting it lists the pages it is on first.
 - Ctrl + Up shows every page as a small picture with its wallpaper and cubbies: click one, press its number, or use the arrow keys and Enter. Many pages wrap onto more rows so all stay in view.
 - Manage Pages (page bar menu, a double-click on the page name, Ctrl + Super + M from any window, or cubbies --manage-pages) shows the same pictures: drag them into a new order, or click one to bring it forward and Rename, Delete or Go to Page. Its padlock locks every cubby on the page, a click on a cubby in the picture locks just that one, and its gear opens the page's settings beside it: Page Background and Cubby Defaults.
+
+![Manage Pages with one page brought forward and its Cubby Defaults beside it](screenshots/manage-pages.jpg)
 
 **The page bar**
 
@@ -189,6 +205,8 @@ Icons in a cubby behave like icons in the file manager: same menus, same clipboa
 - Quick-hide: double-click the empty desktop (or `cubbies --toggle`) to hide every cubby, optionally the desktop icons too; chosen cubbies can stay visible.
 - Glance: Super + Space (or another key) opens a panel over your windows with a tab for every page and a Favourites row of what you open most. Click an icon to open it, drag it into an app or onto another cubby (even on another page), type to find anything on any page, or use the arrow keys and Enter. Groups fold away, the panel can be moved and resized, and a hot corner can open it. Your cubbies stay where they are on the desktop.
 
+![The Glance panel open over a web browser, with a tab for each page and the icons from every cubby on the page](screenshots/glance.jpg)
+
 **Collecting new desktop files**
 
 - New files that land on the desktop are moved into the cubby that collects their kind: images, documents, music, videos, archives, folders or everything else.
@@ -202,6 +220,8 @@ Icons in a cubby behave like icons in the file manager: same menus, same clipboa
 - Sections down the side: Home, Colour & Appearance, Desktop Pages, Folder Cubbies, Tabbed Cubbies, Roll-up Cubbies, Launch Bar Cubbies, Quick-hide, Glance, Layout & Snapping, Sorting & Organising, Command Line, Backup & Restore, About.
 - Drawn previews (some animated) show what each choice does; scrolling the page never changes a setting by accident.
 - A Welcome Guide of ten short topics opens on first start and from Settings › Home.
+
+![The Settings window on Tabbed Cubbies, with drawn previews of the four tab designs](screenshots/settings.jpg)
 
 **Backups and layouts**
 
