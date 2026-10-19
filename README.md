@@ -32,12 +32,31 @@ It works with the desktop rather than replacing it: the desktop's own file manag
 
 Installing takes one command, and Cubbies starts with an empty desktop and a short Welcome Guide, so nothing is rearranged until you choose.
 
-1. Download `cubbies_1.20.4_all.deb` from the Releases page (or the .rpm or tar.gz for your distribution).
-2. Install it by double-clicking the file, or in a terminal (on Fedora use the .rpm; elsewhere, unpack the tar.gz and run sudo ./install.sh):
+1. Download the file for your distribution from the Releases page:
 
+   | Distribution | File |
+   | --- | --- |
+   | Linux Mint, LMDE, Debian, Ubuntu | `cubbies_1.20.4_all.deb` |
+   | Fedora | `cubbies-1.20.4-1.noarch.rpm` |
+   | Arch, EndeavourOS, Manjaro, openSUSE and others | `cubbies-1.20.4.tar.gz` |
+
+2. Install it with a terminal open in the folder you downloaded it to. On Mint, Debian and Ubuntu you can also just double-click the .deb.
+
+   Linux Mint, LMDE, Debian, Ubuntu:
    ```
    sudo apt install ./cubbies_1.20.4_all.deb
    ```
+   Fedora:
+   ```
+   sudo dnf install ./cubbies-1.20.4-1.noarch.rpm
+   ```
+   Arch, EndeavourOS, Manjaro, openSUSE and others:
+   ```
+   tar xzf cubbies-1.20.4.tar.gz
+   cd cubbies-1.20.4
+   sudo ./install.sh
+   ```
+   install.sh installs what Cubbies needs (with pacman, zypper, dnf or apt), then Cubbies itself.
 3. Start **Cubbies** from the app menu (or run `cubbies`). The Welcome Guide opens the first time.
 4. Hold the left mouse button on an empty part of the desktop, drag a box, and choose **Create Cubby Here**. Desktop icons inside the box move into it.
 5. Drag more files onto it, click its name once more (slowly) to rename it, and right-click it for everything else.
@@ -210,6 +229,7 @@ Icons in a cubby behave like icons in the file manager: same menus, same clipboa
 - Installing a new version restarts a running copy by itself; replacing the program file also restarts it within seconds.
 - “Show as a Folder Cubby on the Desktop” is added to folder menus: a Nemo action on Cinnamon, a Caja action on MATE (with caja-actions installed), and Send To › Folder Cubby on the Desktop in Thunar.
 - Uninstalling puts everything back: the wallpaper and background settings, the desktop's Computer, Home, Trash and Network icons, your files (moved back to the Desktop) and the file manager's desktop settings, on every desktop Cubbies has run on; the configuration and autostart entry are removed.
+- To uninstall: `sudo apt remove cubbies` (Mint, Debian, Ubuntu), `sudo dnf remove cubbies` (Fedora), or `sudo ./install.sh --uninstall` from the unpacked tar.gz folder (others).
 - Needs Linux on X11 with Cinnamon, MATE or Xfce (tested on Linux Mint, Debian, Ubuntu, Fedora and EndeavourOS), Python 3, PyGObject with its cairo bindings, GTK 3 and libX11; libwnck is recommended. Wayland is not supported.
 
 ## FAQ
