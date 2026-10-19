@@ -1,0 +1,27 @@
+#!/bin/sh
+# Uninstalling Cubbies puts every user's desktop back as it was: Cubbies is stopped, the original
+# wallpaper is restored, stored files go back to the Desktop (nothing is deleted), and the
+# settings and start-at-login entry are removed. Upgrades do not run this.
+set -e
+case "$1" in
+    remove|purge) ;;
+    *) exit 0 ;;
+esac
+
+# compiled copies Python may have saved beside the modules (when Cubbies ran as root)
+rm -rf /usr/lib/cubbies/cubbies/__pycache__ /usr/lib/cubbies/cubbies/*/__pycache__ 2>/dev/null || true
+
+getent passwd | while IFS=: read -r name _ uid _ _ home _; do
+    [ "$uid" -ge 1000 ] 2>/dev/null && [ "$uid" -lt 60000 ] || continue
+    [ -d "$home" ] || continue
+    runtime="/run/user/$uid"
+    if [ -S "$runtime/bus" ]; then
+        bus="unix:path=$runtime/bus"
+    else
+        bus=""
+    fi
+    timeout 600 runuser -u "$name" -- env HOME="$home" XDG_RUNTIME_DIR="$runtime" \
+        DBUS_SESSION_BUS_ADDRESS="$bus" \
+        python3 /usr/lib/cubbies/cleanup.py >/dev/null 2>&1 || true
+done
+exit 0

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Folder Cubby on the Desktop
+Comment=Show this folder as a live Folder Cubby on the Cubbies desktop
+Icon=folder
+Exec=cubbies --add-folder %F
+MimeType=inode/directory;
+TryExec=cubbies

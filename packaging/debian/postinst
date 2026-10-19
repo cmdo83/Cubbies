@@ -1,0 +1,21 @@
+#!/bin/sh
+# Start Cubbies again for anyone it was running for when the package was installed or upgraded.
+set -e
+case "$1" in
+    configure) ;;
+    *) exit 0 ;;
+esac
+
+for state in /run/cubbies-restart.*; do
+    [ -f "$state" ] || continue
+    name=${state#/run/cubbies-restart.}
+    set --
+    while IFS= read -r line; do
+        set -- "$@" "$line"
+    done < "$state"
+    rm -f "$state"
+    [ -n "$name" ] || continue
+    runuser -u "$name" -- env -i PATH=/usr/local/bin:/usr/bin:/bin "$@" \
+        setsid -f /usr/bin/cubbies >/dev/null 2>&1 || true
+done
+exit 0

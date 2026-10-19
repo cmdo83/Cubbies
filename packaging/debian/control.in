@@ -1,0 +1,16 @@
+Package: cubbies
+Version: @VERSION@
+Section: utils
+Priority: optional
+Architecture: all
+Depends: python3, python3-gi, python3-gi-cairo, gir1.2-gtk-3.0, libx11-6
+Recommends: gir1.2-wnck-3.0
+Installed-Size: @SIZE@
+Maintainer: Cubbies <cubbies@localhost>
+Description: Desktop cubbies that organise your icons
+ Cubbies puts boxes on the desktop that hold icons for files, folders
+ and applications, styled your way from see-through to solid. It supports
+ several pages, each with its own cubbies and wallpaper, tabs, Folder
+ Cubbies that show a real folder live, launch bars, sorting, cut/copy/paste,
+ and a settings window.
+ For Linux desktops running Cinnamon, MATE or Xfce on X11.

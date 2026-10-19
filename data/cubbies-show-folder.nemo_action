@@ -1,0 +1,7 @@
+[Nemo Action]
+Name=Show as a Folder Cubby on the Desktop
+Comment=Show this folder as a live Folder Cubby on the Cubbies desktop
+Exec=cubbies --add-folder %F
+Icon-Name=folder
+Selection=s
+Extensions=dir;

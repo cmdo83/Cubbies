@@ -1,0 +1,28 @@
+#!/bin/sh
+# Installing or upgrading Cubbies stops any copy that is running (for every user), so the new
+# version is never fighting an old one. postinst starts it again for the users it was running for.
+set -e
+case "$1" in
+    install|upgrade) ;;
+    *) exit 0 ;;
+esac
+
+rm -f /run/cubbies-restart.* 2>/dev/null || true
+found=""
+for pid in $(pgrep -f '^[^ ]*python[0-9.]* [^ ]*cubbies\.py( |$)' 2>/dev/null || true); do
+    [ "$pid" = "$$" ] && continue
+    uid=$(stat -c %u "/proc/$pid" 2>/dev/null) || continue
+    [ "$uid" -ge 1000 ] 2>/dev/null && [ "$uid" -lt 60000 ] || continue
+    name=$(getent passwd "$uid" | cut -d: -f1)
+    [ -n "$name" ] || continue
+    # remember how to reach that user's screen, so postinst can start it again
+    if [ ! -f "/run/cubbies-restart.$name" ]; then
+        tr '\0' '\n' < "/proc/$pid/environ" 2>/dev/null \
+            | grep -E '^(DISPLAY|XAUTHORITY|DBUS_SESSION_BUS_ADDRESS|XDG_RUNTIME_DIR|HOME|XDG_CURRENT_DESKTOP|XDG_SESSION_TYPE|LANG)=' \
+            > "/run/cubbies-restart.$name" 2>/dev/null || true
+    fi
+    kill "$pid" 2>/dev/null || true
+    found=1
+done
+[ -n "$found" ] && sleep 1
+exit 0

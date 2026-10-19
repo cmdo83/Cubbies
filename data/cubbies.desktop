@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Cubbies
+Comment=Keep your desktop icons tidy in cubbies
+Exec=cubbies
+Icon=cubbies
+Terminal=false
+Categories=Utility;
+Keywords=desktop;icons;organizer;cubbies;
+StartupNotify=false

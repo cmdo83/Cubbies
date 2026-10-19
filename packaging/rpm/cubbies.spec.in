@@ -1,0 +1,48 @@
+Name:           cubbies
+Version:        @VERSION@
+Release:        1
+Summary:        Desktop cubbies that organise your icons
+License:        GPL-3.0-or-later
+BuildArch:      noarch
+AutoReqProv:    no
+Requires:       python3, python3-gobject, python3-cairo, gtk3, libX11
+Recommends:     libwnck3
+
+%define __os_install_post %{nil}
+%define _build_id_links none
+
+%description
+Cubbies puts boxes on the desktop that hold icons for files, folders
+and applications, styled your way from see-through to solid. It supports
+several pages, each with its own cubbies and wallpaper, tabs, Folder
+Cubbies that show a real folder live, launch bars, sorting, cut/copy/paste,
+and a settings window.
+For Linux desktops running Cinnamon, MATE or Xfce on X11.
+
+%install
+cp -a @STAGE@/. %{buildroot}/
+
+# The scriptlets are the .deb's maintainer scripts. rpm passes a number instead of a word,
+# so it is turned into the word the script expects first.
+
+%pre
+if [ "$1" -ge 2 ]; then set -- upgrade; else set -- install; fi
+@PREINST@
+
+%post
+set -- configure
+@POSTINST@
+
+%preun
+# on an upgrade rpm runs the OLD package's %preun with 1 (after the new files are in)
+if [ "$1" -eq 0 ]; then set -- remove; else set -- upgrade; fi
+@PRERM@
+
+%files
+/usr/bin/cubbies
+/usr/lib/cubbies
+/usr/share/applications/cubbies.desktop
+/usr/share/icons/hicolor/scalable/apps/cubbies.svg
+/usr/share/nemo/actions/cubbies-show-folder.nemo_action
+/usr/share/file-manager/actions/cubbies-show-folder.desktop
+/usr/share/Thunar/sendto/cubbies-folder.desktop
