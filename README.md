@@ -1,8 +1,8 @@
-# Cubbies — Description and Features
+# Cubbies — Fences-style Desktop Organiser for Linux
 
 Oct 18, 2026
 
-Cubbies is a desktop organiser for Linux on X11, with the Cinnamon, MATE or Xfce desktop. It puts boxes, called cubbies, on the desktop that hold icons for files, folders, applications and system places such as Computer, Home and Trash. Each cubby can be named, coloured from see-through to solid, resized, snapped into place, locked, rolled up to its title bar or combined with others as tabs. A cubby can also show a real folder live, collect new desktop files by type, or list recently opened files. The desktop can be split into several pages, each with its own cubbies, wallpaper and background settings, and switched with the keyboard, mouse wheel, touchpad or screen edge, and renamed, re-ordered and styled together in Manage Pages. Icons in a cubby use the file manager's menus, actions, scripts and clipboard (Nemo, Caja or Thunar), and moves, renames and deletes can be undone.
+Cubbies is a desktop organiser for Linux on X11, with the Cinnamon, MATE or Xfce desktop, inspired by Stardock Fences. It puts boxes, called cubbies, on the desktop that hold icons for files, folders, applications and system places such as Computer, Home and Trash. Each cubby can be named, coloured from see-through to solid, resized, snapped into place, locked, rolled up to its title bar or combined with others as tabs. A cubby can also show a real folder live, collect new desktop files by type, or list recently opened files. The desktop can be split into several pages, each with its own cubbies, wallpaper and background settings, and switched with the keyboard, mouse wheel, touchpad or screen edge, and renamed, re-ordered and styled together in Manage Pages. Icons in a cubby use the file manager's menus, actions, scripts and clipboard (Nemo, Caja or Thunar), and moves, renames and deletes can be undone.
 
 ![A Cinnamon desktop with Cubbies: see-through blue cubbies for apps and files along the top, and a tabbed cubby on the right](screenshots/desktop.jpg)
 
