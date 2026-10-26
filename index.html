@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cubbies for Linux</title>
+<meta name="description" content="Cubbies is a free desktop organiser for Linux on X11. Boxes from see-through to solid hold your files, folders and apps, across desktop pages with their own wallpapers. For Cinnamon, MATE and Xfce.">
+<meta property="og:title" content="Cubbies: a tidy Linux desktop, box by box">
+<meta property="og:description" content="Draw a box around your desktop icons and they drop in. Desktop pages, live folders, an Inbox that sorts new files, and launch bars. For Cinnamon, MATE and Xfce on X11.">
+<meta property="og:image" content="screenshots/desktop.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Ubuntu:wght@400;500;700&family=Ubuntu+Mono:wght@400;700&display=swap">
+<style>
+/* Layout: a plain hero, sections built as see-through cubbies with centred title bars. */
+:root {
+  --bg: #eef5fc;
+  --surface: #ffffff;
+  --ink: #0f2138;
+  --muted: #4b5f77;
+  --line: #c9d8ea;
+  --accent: #1f5fd6;
+  --accent-ink: #ffffff;
+  --cubby: rgba(19, 46, 126, 0.10);
+  --cubby-bar: rgba(19, 46, 126, 0.16);
+  --cubby-edge: rgba(19, 46, 126, 0.22);
+  --code-bg: #0f1d33;
+  --code-ink: #dbe7f7;
+  --font-display: "Bricolage Grotesque", "Ubuntu", system-ui, sans-serif;
+  --font-body: "Ubuntu", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Ubuntu Mono", ui-monospace, "DejaVu Sans Mono", monospace;
+  --radius: 10px;
+  --wrap: 1120px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0a1322; --surface: #111e33; --ink: #e5eefb; --muted: #9bb0ca; --line: #23365a;
+    --accent: #6ea4ff; --accent-ink: #08142a;
+    --cubby: rgba(110, 160, 255, 0.07); --cubby-bar: rgba(110, 160, 255, 0.13); --cubby-edge: rgba(110, 160, 255, 0.22);
+    --code-bg: #060d19; --code-ink: #dbe7f7;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0a1322; --surface: #111e33; --ink: #e5eefb; --muted: #9bb0ca; --line: #23365a;
+  --accent: #6ea4ff; --accent-ink: #08142a;
+  --cubby: rgba(110, 160, 255, 0.07); --cubby-bar: rgba(110, 160, 255, 0.13); --cubby-edge: rgba(110, 160, 255, 0.22);
+  --code-bg: #060d19; --code-ink: #dbe7f7;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { transition: none !important; animation: none !important; } }
+body {
+  background: var(--bg); color: var(--ink);
+  font: 400 16px/1.6 var(--font-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.wrap { max-width: var(--wrap); margin: 0 auto; }
+a { color: var(--accent); }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.1; text-wrap: balance; margin: 0; }
+h2 { font-size: clamp(1.8rem, 1.2rem + 2.2vw, 2.7rem); font-weight: 800; letter-spacing: -0.02em; }
+h3 { font-size: 1.15rem; font-weight: 700; }
+p { margin: 0; }
+.lede { color: var(--muted); max-width: 62ch; font-size: 1.07rem; }
+code, kbd, pre { font-family: var(--font-mono); }
+.skip { position: absolute; left: -999px; }
+.skip:focus { left: 16px; top: 16px; z-index: 50; background: var(--surface); padding: 8px 12px; }
+
+/* nav */
+.nav {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+  margin: 0 calc(-1 * max(16px, env(safe-area-inset-left, 0px))) 0 calc(-1 * max(16px, env(safe-area-inset-right, 0px)));
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+}
+.nav .wrap { display: flex; align-items: center; gap: 24px; min-height: 60px; }
+.brand { display: flex; align-items: center; gap: 10px; font: 800 1.25rem var(--font-display); color: var(--ink); text-decoration: none; }
+.brand img { width: 30px; height: 30px; }
+.nav-links { display: flex; gap: 22px; margin-left: auto; align-items: center; }
+.nav-links a { color: var(--muted); text-decoration: none; font-weight: 500; font-size: 0.95rem; }
+.nav-links a:hover { color: var(--ink); }
+.nav-links .gh { color: var(--ink); border: 1px solid var(--line); padding: 6px 12px; border-radius: 999px; }
+@media (max-width: 720px) { .nav-links a:not(.gh) { display: none; } }
+
+/* hero */
+.hero { padding-block: 64px 28px; display: grid; gap: 22px; }
+.hero h1 { font-size: clamp(3rem, 1.6rem + 6vw, 6rem); font-weight: 800; letter-spacing: -0.035em; display: flex; align-items: center; gap: 0.2em; }
+.hero h1 img { width: 0.8em; height: 0.8em; }
+.hero .tag { font: 700 clamp(1.3rem, 1rem + 1.3vw, 1.9rem) var(--font-display); letter-spacing: -0.01em; }
+.cta { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; border-radius: 999px; font-weight: 700; text-decoration: none; font-size: 1rem; border: 1px solid transparent; cursor: pointer; font-family: var(--font-body); }
+.btn-primary { background: var(--accent); color: var(--accent-ink); }
+.btn-primary:hover { filter: brightness(1.08); }
+.btn-ghost { border-color: var(--line); color: var(--ink); background: var(--surface); }
+.btn-ghost:hover { border-color: var(--accent); }
+.meta { color: var(--muted); font-size: 0.92rem; }
+.meta b { color: var(--ink); font-weight: 500; }
+
+/* sections */
+section.block { padding-block: 72px 8px; display: grid; gap: 28px; }
+.eyebrow { font: 700 0.78rem var(--font-body); letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+.head { display: grid; gap: 12px; }
+
+/* cubby-styled card */
+.cb { background: var(--cubby); border: 1px solid var(--cubby-edge); border-radius: var(--radius); overflow: hidden; min-width: 0; }
+.cb > .t { background: var(--cubby-bar); text-align: center; font: 700 0.92rem var(--font-body); padding: 9px 12px; color: var(--ink); }
+.cb > .b { padding: 18px 20px 20px; display: grid; gap: 8px; color: var(--muted); }
+.cb > .b strong { color: var(--ink); font-weight: 500; }
+.grid3 { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+
+/* before / after */
+.ba { position: relative; border-radius: 12px; overflow: hidden; aspect-ratio: 1920 / 1158; max-width: 100%; border: 1px solid var(--line); --pos: 50%; }
+.ba img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.ba .after { clip-path: inset(0 0 0 var(--pos)); }
+.ba .handle { position: absolute; top: 0; bottom: 0; left: var(--pos); width: 3px; margin-left: -1.5px; background: #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.25); pointer-events: none; }
+.ba .handle::after { content: "◂ ▸"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; color: #1b2430; font: 700 13px var(--font-body); padding: 6px 10px; border-radius: 999px; box-shadow: 0 2px 8px rgba(0,0,0,.3); white-space: nowrap; }
+.ba input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: ew-resize; margin: 0; }
+.ba .lab { position: absolute; top: 12px; font: 700 12px var(--font-body); letter-spacing: .08em; text-transform: uppercase; color: #fff; background: rgba(10,25,60,.55); padding: 4px 10px; border-radius: 999px; pointer-events: none; }
+.ba .lab.l { left: 12px; } .ba .lab.r { right: 12px; }
+
+/* feature tour: tabs drawn like Cubbies' rounded tab design */
+.tour { display: grid; gap: 0; }
+.tabs { display: flex; gap: 4px; padding: 5px; background: var(--cubby-bar); border: 1px solid var(--cubby-edge); border-bottom: 0; border-radius: var(--radius) var(--radius) 0 0; overflow-x: auto; scrollbar-width: thin; }
+.tabs button { flex: 1 0 auto; font: 500 0.9rem var(--font-body); color: var(--muted); background: transparent; border: 0; padding: 8px 14px; border-radius: 7px; cursor: pointer; white-space: nowrap; }
+.tabs button[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); }
+.tabs button:hover:not([aria-selected="true"]) { color: var(--ink); background: var(--cubby); }
+.panel { border: 1px solid var(--cubby-edge); border-radius: 0 0 var(--radius) var(--radius); background: var(--cubby); padding: 16px; display: grid; gap: 18px; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); align-items: start; }
+.panel img { width: 100%; border-radius: 8px; border: 1px solid var(--line); display: block; }
+.panel .txt { display: grid; gap: 10px; color: var(--muted); }
+.panel .txt h3 { color: var(--ink); font-size: 1.4rem; }
+.panel ul { margin: 0; padding-left: 1.1em; display: grid; gap: 6px; }
+@media (max-width: 820px) { .panel { grid-template-columns: 1fr; } }
+
+/* kinds table */
+.tbl { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 620px; font-size: 0.95rem; }
+th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font: 700 0.78rem var(--font-body); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); background: var(--cubby); }
+tr:last-child td { border-bottom: 0; }
+td:first-child { font-weight: 700; white-space: nowrap; }
+td { color: var(--muted); } td:first-child { color: var(--ink); }
+
+/* keys */
+.keys { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+.key { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 12px 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); color: var(--muted); font-size: 0.95rem; }
+kbd { font-size: 0.85rem; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; padding: 2px 7px; white-space: nowrap; }
+
+/* install */
+.install { display: grid; gap: 0; }
+.distro { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.distro button { font: 500 0.95rem var(--font-body); padding: 9px 16px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--muted); cursor: pointer; }
+.distro button[aria-selected="true"] { border-color: var(--accent); color: var(--ink); box-shadow: inset 0 0 0 1px var(--accent); }
+.term { background: var(--code-bg); color: var(--code-ink); border-radius: var(--radius); overflow: hidden; }
+.term .tb { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 12px 8px 16px; background: rgba(255,255,255,.06); font: 400 0.85rem var(--font-mono); color: #9fb3cf; }
+.term .tb button { font: 500 0.8rem var(--font-body); color: #dbe7f7; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.15); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+.term pre { margin: 0; padding: 16px 18px; overflow-x: auto; font-size: 0.98rem; line-height: 1.7; }
+.term pre .p { color: #6ea4ff; user-select: none; }
+.inst-notes { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin-top: 18px; }
+.inst-notes code { font-size: 0.92em; background: var(--cubby-bar); padding: 1px 5px; border-radius: 4px; color: var(--ink); }
+
+/* faq */
+.faq { display: grid; gap: 10px; }
+details { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+summary { cursor: pointer; padding: 16px 20px; font: 700 1.05rem var(--font-display); list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+summary::-webkit-details-marker { display: none; }
+summary::after { content: "+"; color: var(--accent); font-size: 1.3rem; line-height: 1; }
+details[open] summary::after { content: "−"; }
+details > p { padding: 0 20px 18px; color: var(--muted); max-width: 75ch; }
+
+footer { margin-top: 80px; border-top: 1px solid var(--line); padding-block: 32px 48px; }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 18px 32px; justify-content: space-between; align-items: center; color: var(--muted); font-size: 0.92rem; }
+footer nav { display: flex; flex-wrap: wrap; gap: 18px; }
+footer a { color: var(--muted); }
+footer a:hover { color: var(--ink); }
+</style>
+
+
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#top"><img src="icon.svg" alt="">Cubbies</a>
+    <nav class="nav-links" aria-label="Main">
+      <a href="#features">Features</a>
+      <a href="#pages">Pages</a>
+      <a href="#install">Install</a>
+      <a href="#faq">FAQ</a>
+      <a class="gh" href="https://github.com/cmdo83/Cubbies">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+  <section class="hero" id="top">
+    <h1><img src="icon.svg" alt="">Cubbies</h1>
+    <p class="tag">A tidy Linux desktop, one box at a time.</p>
+    <p class="lede">Cubbies puts boxes on your desktop, from see-through to solid, that hold your files, folders and apps. Draw one around your icons and they drop in. Spread cubbies across desktop pages, each with its own wallpaper, show folders live, and let new downloads sort themselves.</p>
+    <div class="cta">
+      <a class="btn btn-primary" href="https://github.com/cmdo83/Cubbies/releases/download/v1.20.4/cubbies_1.20.4_all.deb">Download for Mint, Debian &amp; Ubuntu</a>
+      <a class="btn btn-ghost" href="#install">Fedora, Arch and others</a>
+    </div>
+    <p class="meta"><b>Version 1.20.4</b> · For Cinnamon, MATE and Xfce on X11 · Free and open source under GPL-3.0</p>
+
+  </section>
+
+  <section class="block" id="ideas" aria-labelledby="ideas-h">
+    <div class="head">
+      <span class="eyebrow">How it fits together</span>
+      <h2 id="ideas-h">Three ideas carry the whole program</h2>
+    </div>
+    <div class="grid3">
+      <div class="cb"><div class="t">Cubbies</div><div class="b"><p><strong>Boxes on the desktop</strong>, as see-through or as solid as you like. Each holds files, folders and apps with its own name, colour, size and view. Special kinds show a real folder, catch new downloads, list recent files or act as a launch bar.</p></div></div>
+      <div class="cb"><div class="t">Pages</div><div class="b"><p><strong>Separate desktops</strong> for work, home, games or projects, each with its own cubbies, wallpaper and default look. Pull the screen edge, swipe, scroll over a title bar or press Ctrl + ← / → to turn the page.</p></div></div>
+      <div class="cb"><div class="t">The Cubbies folder</div><div class="b"><p><strong>~/Cubbies</strong> is where files you put in a cubby are kept, so your Desktop folder stays clean. Shortcuts to apps and system places are only linked, never moved.</p></div></div>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="ba-h">
+    <div class="head">
+      <span class="eyebrow">Before and after</span>
+      <h2 id="ba-h">The same desktop, sorted into cubbies</h2>
+      <p class="lede">Drag the handle. Nemo, Caja or xfdesktop still owns the desktop; Cubbies adds its boxes on top and asks for nothing to be set up first.</p>
+    </div>
+    <div class="ba" id="ba">
+      <img src="screenshots/before.jpg" alt="A Cinnamon desktop with app icons and documents scattered across a sky and grass wallpaper" loading="lazy">
+      <img class="after" src="screenshots/desktop.jpg" alt="The same desktop with the icons grouped into named see-through cubbies: My PC, Image &amp; Video Editing, Media, Web Browsers, Internet Tools, Other, and a tabbed cubby for files" loading="lazy">
+      <span class="lab l">Before</span><span class="lab r">After</span>
+      <div class="handle"></div>
+      <input type="range" id="baRange" min="0" max="100" value="50" aria-label="Compare before and after">
+    </div>
+  </section>
+
+  <section class="block" id="features" aria-labelledby="feat-h">
+    <div class="head">
+      <span class="eyebrow">Straight from the app</span>
+      <h2 id="feat-h">A tour of what a cubby can do</h2>
+      <p class="lede">Real screenshots from Linux Mint Cinnamon. Pick a tab.</p>
+    </div>
+    <div class="tour">
+      <div class="tabs" role="tablist" id="tourTabs"></div>
+      <div class="panel" role="tabpanel" id="tourPanel" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="kinds-h">
+    <div class="head">
+      <span class="eyebrow">Five kinds</span>
+      <h2 id="kinds-h">Pick what a cubby holds</h2>
+      <p class="lede">Right-click › Cubby Type switches between the first four.</p>
+    </div>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>Kind</th><th>What it holds</th><th>How it behaves</th></tr></thead>
+        <tbody>
+          <tr><td>Regular Cubby</td><td>Files, folders and app shortcuts you add</td><td>Files are kept in the Cubbies folder; shortcuts are linked</td></tr>
+          <tr><td>Folder Cubby</td><td>A real folder, shown live (up to 400 items)</td><td>Double-click a sub-folder to look inside, ↑ to go back; name clashes ask first; network folders refresh every 3 seconds</td></tr>
+          <tr><td>Inbox Cubby</td><td>New files that land on the desktop</td><td>Catches everything no other cubby collects</td></tr>
+          <tr><td>Recent Files Cubby</td><td>The files you opened lately, newest first</td><td>Fills itself; Clear Recent Files from its menu</td></tr>
+          <tr><td>Launch Bar Cubby</td><td>Your favourite apps, along a screen edge</td><td>No title bar, auto-hide, one click to open</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="block" id="pages" aria-labelledby="pages-h">
+    <div class="head">
+      <span class="eyebrow">Pages and keys</span>
+      <h2 id="pages-h">A desktop for every part of your day</h2>
+      <p class="lede">Each page keeps its own cubbies, wallpaper and default cubby look. Drag a cubby to the screen edge and hold it to carry it to the next page. The page keys only work while the desktop is in front, so your other programs keep them.</p>
+    </div>
+    <div class="keys">
+      <div class="key">Turn the page <kbd>Ctrl + ← / →</kbd></div>
+      <div class="key">See every page <kbd>Ctrl + ↑</kbd></div>
+      <div class="key">Open Glance <kbd>Super + Space</kbd></div>
+      <div class="key">Manage Pages <kbd>Ctrl + Super + M</kbd></div>
+      <div class="key">Undo a move or delete <kbd>Ctrl + Z</kbd></div>
+      <div class="key">Search inside a cubby <kbd>Ctrl + F</kbd></div>
+      <div class="key">Hide every cubby <kbd>double-click desktop</kbd></div>
+      <div class="key">Show the page bar <kbd>Ctrl + Alt + P</kbd></div>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="safe-h">
+    <div class="head">
+      <span class="eyebrow">Safe with your files</span>
+      <h2 id="safe-h">Organise freely, take it back anytime</h2>
+    </div>
+    <div class="grid3">
+      <div class="cb"><div class="t">Undo</div><div class="b"><p>Ctrl + Z over a cubby takes back moves, deletes, renames and layout changes, restoring files from the Trash.</p></div></div>
+      <div class="cb"><div class="t">Backups</div><div class="b"><p>Back up now, on every start, daily or weekly, keeping the newest 3 to 200. Restoring never loses a file; anything left over goes back to the Desktop.</p></div></div>
+      <div class="cb"><div class="t">Clean uninstall</div><div class="b"><p>Removing Cubbies puts back your wallpaper, the desktop's own icons and your files, on every desktop it has run on.</p></div></div>
+      <div class="cb"><div class="t">Name clashes</div><div class="b"><p>A conflict window like the file manager's: previews, sizes and dates, then Skip, Keep Both, Replace or Merge.</p></div></div>
+      <div class="cb"><div class="t">Links, not moves</div><div class="b"><p>App shortcuts, system places, drives and anything outside your home folder are only linked. Folder Cubbies show a folder where it is.</p></div></div>
+      <div class="cb"><div class="t">Your file manager</div><div class="b"><p>The same right-click menu, actions, scripts and clipboard as Nemo, Caja or Thunar, so nothing new to learn.</p></div></div>
+    </div>
+  </section>
+
+  <section class="block" id="install" aria-labelledby="inst-h">
+    <div class="head">
+      <span class="eyebrow">Install</span>
+      <h2 id="inst-h">One command, then draw your first cubby</h2>
+      <p class="lede">Download the file for your distribution from the <a href="https://github.com/cmdo83/Cubbies/releases/latest">Releases page</a> and run the command in the folder you saved it to. Cubbies starts with an empty desktop and a short Welcome Guide, so nothing is rearranged until you choose.</p>
+    </div>
+    <div class="install">
+      <div class="distro" role="tablist" id="distroTabs"></div>
+      <div class="term">
+        <div class="tb"><span id="termFile"></span><button type="button" id="copyBtn">Copy</button></div>
+        <pre id="termCmd"></pre>
+      </div>
+      <div class="inst-notes">
+        <div class="cb"><div class="t">Then</div><div class="b"><p>Start <strong>Cubbies</strong> from the app menu, or run <code>cubbies</code>. Hold the left button on empty desktop, drag a box and choose Create Cubby Here. To start at login, tick it in Settings › Home.</p></div></div>
+        <div class="cb"><div class="t">Uninstall</div><div class="b"><p id="uninst"></p></div></div>
+        <div class="cb"><div class="t">Needs</div><div class="b"><p>Linux on X11 with Cinnamon, MATE or Xfce. Python 3, PyGObject with cairo bindings, GTK 3 and libX11; libwnck recommended. Tested on Mint, Debian, Ubuntu, Fedora and EndeavourOS. Wayland is not supported.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="faq" aria-labelledby="faq-h">
+    <div class="head">
+      <span class="eyebrow">Questions</span>
+      <h2 id="faq-h">Short answers</h2>
+    </div>
+    <div class="faq">
+      <details><summary>Does Cubbies move my files?</summary><p>Only the ones you put in a cubby. By default they go to ~/Cubbies so your Desktop folder stays clean. You can turn that off, or move the Cubbies folder anywhere, in Settings › Sorting &amp; Organising. App shortcuts, system places and drives are only linked.</p></details>
+      <details><summary>What happens if I uninstall it?</summary><p>Everything goes back. Stored files move back to your Desktop, your wallpaper and desktop-icon settings are restored, and the configuration and autostart entry are removed.</p></details>
+      <details><summary>Does it replace my desktop or file manager?</summary><p>No. Nemo, Caja or xfdesktop still draws the desktop and its icons. Cubbies adds its boxes on top and borrows the file manager's own menus, actions, scripts and clipboard.</p></details>
+      <details><summary>Does it work on Wayland or other desktops?</summary><p>It is built for Linux on X11 with Cinnamon, MATE or Xfce. Other X11 desktops would need changes for wallpaper, desktop icons and the file manager. Wayland is not supported.</p></details>
+      <details><summary>Is it heavy?</summary><p>It is one Python program with no background services. It uses short, light polls to notice desktop clicks, edge pulls and the launch bar, and makes thumbnails in the background.</p></details>
+      <details><summary>Will my layout survive a monitor change?</summary><p>Yes. Cubbies on an unplugged screen move onto one that's still there and go back when it returns. Saved layouts let you switch arrangements by name.</p></details>
+      <details><summary>How do I report a bug?</summary><p>Open an issue on <a href="https://github.com/cmdo83/Cubbies/issues">GitHub</a> with your Cubbies version (cubbies --version), your distribution and desktop, and if you can, the output of CUBBIES_DEBUG=1 cubbies.</p></details>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Cubbies is free and open source under the GPL-3.0 license.</span>
+    <nav aria-label="Footer">
+      <a href="https://github.com/cmdo83/Cubbies">Source</a>
+      <a href="https://github.com/cmdo83/Cubbies/releases">Releases</a>
+      <a href="https://github.com/cmdo83/Cubbies/issues">Report an issue</a>
+      <a href="https://github.com/cmdo83/Cubbies/blob/main/LICENSE">License</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function () {
+  /* ---------- before / after ---------- */
+  var ba = document.getElementById('ba'), rng = document.getElementById('baRange');
+  rng.addEventListener('input', function () { ba.style.setProperty('--pos', rng.value + '%'); });
+
+  /* ---------- feature tour ---------- */
+  var tour = [
+    { id: 'draw', tab: 'Drawing a cubby', img: 'drawing-a-cubby.jpg', alt: 'A box drawn around three media app icons, with a menu offering Create Cubby Here, Create Folder Cubby Here, Create Inbox Cubby Here and Create Recent Files Cubby Here',
+      h: 'Draw a box, get a cubby', p: 'Hold the left button on the empty desktop and drag. Icons inside the box drop straight into the new cubby.',
+      li: ['Create a regular, Folder, Inbox or Recent Files cubby from the same menu', 'Draw around existing cubbies to pick them and move them together', 'Snap to other cubbies and screen edges, or hold Shift to place freely'] },
+    { id: 'folder', tab: 'Folder Cubbies', img: 'folder-cubby.jpg', alt: 'A Folder Cubby named Winston showing photo thumbnails, with an up arrow for going back',
+      h: 'Show any folder live', p: 'Put Downloads, a photo folder or a network share on the desktop and browse into sub-folders right inside the box.',
+      li: ['Thumbnails for pictures and documents', 'Drops move files into the real folder', 'Add one from the file manager: Show as a Folder Cubby on the Desktop'] },
+    { id: 'menu', tab: 'File menu', img: 'file-menu.jpg', alt: 'The right-click menu on a file in a cubby: Open With, Cut, Copy, Rename, Move to Page, Put in Nook, Move Back to Desktop, Delete, Compress and Properties',
+      h: 'Your file manager’s menu', p: 'Icons in a cubby behave like icons in Nemo, Caja or Thunar, with your own actions and scripts included.',
+      li: ['Cut, Copy and Paste work both ways with the file manager', 'Move to Page, Put in Nook, Move Back to Desktop', 'Compress and Extract Here with File Roller or Engrampa'] },
+    { id: 'style', tab: 'Styling', img: 'styling-options.jpg', alt: 'Styling Options open for a cubby called Other, which has turned pink while its colour sliders are moved',
+      h: 'Any colour, see-through to solid', p: 'Transparency, intensity, tint and saturation sliders, Pick from Screen, or the wallpaper’s main colour. Changes show on the cubby straight away.',
+      li: ['Frosted-glass blur with its own amount and glass strength', 'Corner roundness, border, title font, height and alignment', 'Copy a look to other cubbies and pages, or make it a page default'] },
+    { id: 'tabs', tab: 'Tabs & settings', img: 'settings.jpg', alt: 'The Settings window on Tabbed Cubbies, with drawn previews of the rounded, segmented, flat and menu-only tab designs',
+      h: 'Stack cubbies as tabs', p: 'Drag one title bar onto another and the two become tabs of one cubby. Each tab can have its own colour.',
+      li: ['Four tab designs: rounded, segmented, flat or a drop-down', 'Filter tabs by kind: Images, Documents, Music, Videos and more', 'Nooks: tabs that hold icons you pick yourself'] },
+    { id: 'pagesimg', tab: 'Manage Pages', img: 'manage-pages.jpg', alt: 'Manage Pages with Page 8 brought forward and its Cubby Defaults beside it',
+      h: 'Every page in one view', p: 'Drag page pictures into a new order, rename and delete pages, and set each page’s background and default cubby look from its gear.',
+      li: ['The padlock locks every cubby on a page', 'Give Every Cubby on This Page This Look', 'Open from anywhere with Ctrl + Super + M'] },
+    { id: 'glance', tab: 'Glance', img: 'glance.jpg', alt: 'The Glance panel open over a web browser, with a tab for each page and the icons from every cubby on the page',
+      h: 'Your desktop, over any window', p: 'Super + Space opens a panel with a tab for every page and a Favourites row of what you open most.',
+      li: ['Type to find anything on any page', 'Drag an icon into an app or onto another cubby', 'Open it from a hot corner if you like'] }
+  ];
+  var tabsEl = document.getElementById('tourTabs'), panel = document.getElementById('tourPanel');
+  function showTour(i) {
+    var t = tour[i];
+    Array.prototype.forEach.call(tabsEl.children, function (b, j) { b.setAttribute('aria-selected', j === i ? 'true' : 'false'); b.tabIndex = j === i ? 0 : -1; });
+    panel.innerHTML = '<img src="screenshots/' + t.img + '" alt="' + t.alt.replace(/"/g, '&quot;') + '">' +
+      '<div class="txt"><h3>' + t.h + '</h3><p>' + t.p + '</p><ul>' + t.li.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul></div>';
+  }
+  tour.forEach(function (t, i) {
+    var b = document.createElement('button'); b.type = 'button'; b.role = 'tab'; b.id = 'tab-' + t.id; b.textContent = t.tab;
+    b.addEventListener('click', function () { showTour(i); });
+    b.addEventListener('keydown', function (e) {
+      var n = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+      if (n) { var k = (i + n + tour.length) % tour.length; showTour(k); tabsEl.children[k].focus(); }
+    });
+    tabsEl.appendChild(b);
+  });
+  showTour(0);
+  tour.forEach(function (t) { var im = new Image(); im.src = 'screenshots/' + t.img; });
+
+  /* ---------- install ---------- */
+  var distros = [
+    { id: 'deb', name: 'Mint, Debian, Ubuntu', file: 'cubbies_1.20.4_all.deb',
+      cmd: ['sudo apt install ./cubbies_1.20.4_all.deb'], un: 'sudo apt remove cubbies', note: 'You can also just double-click the .deb.' },
+    { id: 'rpm', name: 'Fedora', file: 'cubbies-1.20.4-1.noarch.rpm',
+      cmd: ['sudo dnf install ./cubbies-1.20.4-1.noarch.rpm'], un: 'sudo dnf remove cubbies' },
+    { id: 'tar', name: 'Arch, EndeavourOS, Manjaro, openSUSE', file: 'cubbies-1.20.4.tar.gz',
+      cmd: ['tar xzf cubbies-1.20.4.tar.gz', 'cd cubbies-1.20.4', 'sudo ./install.sh'], un: 'sudo ./install.sh --uninstall', unNote: ' from the unpacked folder', note: 'install.sh installs what Cubbies needs with pacman, zypper, dnf or apt.' }
+  ];
+  var dTabs = document.getElementById('distroTabs'), tFile = document.getElementById('termFile'), tCmd = document.getElementById('termCmd'), un = document.getElementById('uninst'), cur = 0;
+  function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+  function showDistro(i) {
+    cur = i; var d = distros[i];
+    Array.prototype.forEach.call(dTabs.children, function (b, j) { b.setAttribute('aria-selected', j === i ? 'true' : 'false'); });
+    tFile.innerHTML = '<a style="color:inherit" href="https://github.com/cmdo83/Cubbies/releases/download/v1.20.4/' + d.file + '">' + d.file + '</a>';
+    tCmd.innerHTML = d.cmd.map(function (c) { return '<span class="p">$ </span>' + esc(c); }).join('\n');
+    un.innerHTML = '<code>' + esc(d.un) + '</code>' + (d.unNote || '') + '. Your files go back to the Desktop and your settings are restored.' + (d.note ? ' ' + d.note : '');
+  }
+  distros.forEach(function (d, i) {
+    var b = document.createElement('button'); b.type = 'button'; b.role = 'tab'; b.id = 'distro-' + d.id; b.textContent = d.name;
+    b.addEventListener('click', function () { showDistro(i); }); dTabs.appendChild(b);
+  });
+  var looksLike = /Fedora/i.test(navigator.userAgent) ? 1 : 0;
+  showDistro(looksLike);
+  var copyBtn = document.getElementById('copyBtn');
+  copyBtn.addEventListener('click', function () {
+    var text = distros[cur].cmd.join('\n');
+    function done(ok) { copyBtn.textContent = ok ? 'Copied' : 'Select and copy'; setTimeout(function () { copyBtn.textContent = 'Copy'; }, 1600); }
+    function fallback() { var r = document.createRange(); r.selectNodeContents(tCmd); var s = getSelection(); s.removeAllRanges(); s.addRange(r); done(false); }
+    try { navigator.clipboard.writeText(text).then(function () { done(true); }, fallback); } catch (e) { fallback(); }
+  });
+
+})();
+</script>
+
+</body>
+</html>
